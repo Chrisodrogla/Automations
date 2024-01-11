@@ -79,6 +79,12 @@
         td a:hover {
             text-decoration: underline;
         }
+
+        #jobListings table td:nth-child(2) {
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        font-weight: bold;
+        color: purple ;
     </style>
 </head>
 <body>
@@ -99,6 +105,7 @@
         <thead>
         <tr>
             <th>Job Title</th>
+            <th>Keyword Found</th>
             <th>Date</th>
             <th>Job Link</th>
         </tr>
@@ -110,10 +117,16 @@
 <script>
     // Function to fetch JSON data from a file
     async function fetchData(url) {
+    try {
         const response = await fetch(url);
         const data = await response.json();
+        console.log("Fetched data:", data); // Log the fetched data
         return data;
+    } catch (error) {
+        console.error("Error fetching data:", error);
+        return [];
     }
+}
 
     // Function to populate the job table
     async function populateJobTable() {
@@ -129,10 +142,19 @@
         jobData.forEach(job => {
             const row = document.createElement("tr");
             const titleCell = document.createElement("td");
+            const keywordCell = document.createElement("td");
             const dateCell = document.createElement("td");
             const linkCell = document.createElement("td");
 
             titleCell.textContent = job.title;
+
+            // Check if 'found_keywords' is present and not empty
+            if (job.found_keywords && job.found_keywords.length > 0) {
+                keywordCell.textContent = job.found_keywords.join(', ');
+            } else {
+                keywordCell.textContent = "N/A"; // or any default value
+            }
+
             dateCell.textContent = job.date;
 
             const link = document.createElement("a");
@@ -142,6 +164,7 @@
             linkCell.appendChild(link);
 
             row.appendChild(titleCell);
+            row.appendChild(keywordCell);
             row.appendChild(dateCell);
             row.appendChild(linkCell);
 

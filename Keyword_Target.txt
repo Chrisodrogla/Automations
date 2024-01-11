@@ -4,3 +4,7 @@ scraping
 scrape
 xpath
 automation
+web-scraping
+web scraping
+selenium
+beautifulsoup

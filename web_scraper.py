@@ -18,6 +18,8 @@ driver.get(website)
 
 link_visit = []
 
+
+
 while True:
     # Find and store the links on the current page
     post_links = name_elements = driver.find_elements("xpath", '//div[@class="desc fs-14 d-none d-sm-block"]/a[1]')
@@ -36,6 +38,7 @@ while True:
         break
 
 # use this code below to limit pagination
+
 """
 num_pages_to_visit = 10
 
@@ -51,10 +54,10 @@ for _ in range(num_pages_to_visit):
         pagination.click()
     except NoSuchElementException:
         # If the next page link is not found, exit the loop
-        break """
-
+        break
+"""
 # Function to scrape information from a given URL
-def scrape_data(url):
+def scrape_data(url, partial_words):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
 
@@ -62,11 +65,15 @@ def scrape_data(url):
     date = soup.find_all('p', {'class': 'fs-18'})[3].text
     title = soup.find('h1', {'class': 'fs-24 fw-600 text-white text-center mb-40'}).text
 
+    # Check if any of the partial words are present in the description (case-insensitive)
+    found_keywords = [word.lower() for word in partial_words if word.lower() in description.lower()]
+
     return {
         'url': url,
         'title': title,
         'date': date,
-        'description': description
+        'description': description,
+        'found_keywords': found_keywords
     }
 
 # List to store the scraped data dictionaries
@@ -88,22 +95,22 @@ keywords_file_path = 'Keyword_Target.txt'
 with open(keywords_file_path, 'r') as keywords_file:
     partial_words = [line.strip() for line in keywords_file]
 
-# Loop through each link and scrape data
 for url in link_visit:
     # Skip if URL already exists
     if url in existing_urls:
         continue
 
     try:
-        data = scrape_data(url)
+        data = scrape_data(url, partial_words)
 
-        # Check if any of the partial words are present in the description (case-insensitive)
-        if any(word.lower() in data['description'].lower() for word in partial_words):
+        # Append new data to existing data only if keywords are found
+        if data['found_keywords']:
             data_list.append(data)
 
         time.sleep(2)  # Add a delay to avoid being blocked
     except Exception as e:
         print(f"Error scraping data from {url}: {e}")
+
 
 # Append new data to existing data
 existing_data.extend(data_list)
