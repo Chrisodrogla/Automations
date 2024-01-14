@@ -204,7 +204,7 @@
 
         jobRows.forEach(row => {
             const title = row.querySelector("td:first-child").textContent.toLowerCase();
-            const date = row.querySelector("td:nth-child(2)").textContent;
+            const date = row.querySelector("td:nth-child(3)").textContent; // Fix here
 
             const titleMatch = title.includes(searchInput);
             const dateMatch = dateFilter === "all" || date === dateFilter;
@@ -215,7 +215,7 @@
                 row.style.display = "none";
             }
         });
-    }
+}
 </script>
 
 </body>
