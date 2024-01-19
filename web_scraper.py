@@ -7,6 +7,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 
+start_time = time.time()
+
 # Specify the website to visit
 website = 'https://www.onlinejobs.ph/jobseekers/jobsearch'
 
@@ -121,3 +123,10 @@ with open('data_gathered.json', 'w') as json_file:
 
 # Close the webdriver
 driver.quit()
+# Record the end time
+end_time = time.time()
+
+# Calculate the elapsed time
+elapsed_time = end_time - start_time
+
+print(f"Your code took {elapsed_time:.4f} seconds to run.")

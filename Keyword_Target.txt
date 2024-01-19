@@ -5,6 +5,12 @@ scrape
 xpath
 automation
 web-scraping
-web scraping
 selenium
 beautifulsoup
+Data mining
+data extract
+xpath
+panda
+Crawler
+Crawling
+scrapy
