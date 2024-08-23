@@ -14,3 +14,13 @@ panda
 Crawler
 Crawling
 scrapy
+Proxy server
+Python requests
+Urllib3
+Urllib
+sql
+Requests
+Lxml
+Data Engineer
+data Analyst
+Analyst

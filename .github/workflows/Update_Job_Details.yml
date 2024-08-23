@@ -1,0 +1,37 @@
+name: Daily Runner
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "40 3 * * *" # 10:40 PM UTC+8 (14:40 UTC)
+
+jobs:
+  run_python_script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install Dependencies
+      run: |
+        pip install pandas selenium google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client pyodbc beautifulsoup4
+
+    - name: Run Python Script
+      run: |
+        python web_scraper.py
+
+    - name: Commit and push changes
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+        git add data_gathered.json
+        git commit -m 'Update generate'
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

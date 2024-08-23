@@ -3,8 +3,7 @@ import json
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 
 start_time = time.time()
@@ -12,8 +11,14 @@ start_time = time.time()
 # Specify the website to visit
 website = 'https://www.onlinejobs.ph/jobseekers/jobsearch'
 
-# Initialize the webdriver
-driver = webdriver.Chrome()
+
+# Set Chrome options for headless mode
+chrome_options = Options()
+chrome_options.add_argument('--headless')  # This line makes Chrome run in headless mode
+
+# Initialize the webdriver with the specified options
+driver = webdriver.Chrome(options=chrome_options)
+
 
 # Navigate to the website
 driver.get(website)
@@ -65,7 +70,7 @@ def scrape_data(url, partial_words):
 
     description = soup.find('p', {'id': 'job-description'}).text
     date = soup.find_all('p', {'class': 'fs-18'})[3].text
-    title = soup.find('h1', {'class': 'fs-24 fw-600 text-white text-center mb-40'}).text
+    title = soup.find('div', {'class': 'col-12 text-center'}).find('h1').text
 
     # Check if any of the partial words are present in the description (case-insensitive)
     found_keywords = [word.lower() for word in partial_words if word.lower() in description.lower()]
