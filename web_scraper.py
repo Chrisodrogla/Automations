@@ -9,8 +9,8 @@ from selenium.common.exceptions import NoSuchElementException
 start_time = time.time()
 
 # Specify the website to visit
-website = 'https://www.onlinejobs.ph/jobseekers/jobsearch'
-
+# website = 'https://www.onlinejobs.ph/jobseekers/jobsearch'
+website ='https://www.onlinejobs.ph/jobseekers/jobsearch/960'
 
 # Set Chrome options for headless mode
 chrome_options = Options()
