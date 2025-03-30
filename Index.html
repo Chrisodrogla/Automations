@@ -192,9 +192,9 @@
         }
 
         #jobListings table td:nth-child(2) {
-        font-family: 'Courier New', monospace;
-            font-size: 0.875rem;
-            font-weight: 500;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            font-weight: 800;
             color: var(--primary-color);
         }
 
@@ -680,7 +680,11 @@
             // Update latest job date
             if (allJobData.length > 0) {
                 const latestDate = new Date(Math.max(...allJobData.map(job => new Date(job.date))));
-                document.getElementById('latestJob').textContent = latestDate.toLocaleDateString();
+                document.getElementById('latestJob').textContent = latestDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
             }
         }
 
