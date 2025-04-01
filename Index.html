@@ -643,6 +643,10 @@
             currentPage = 1;
             renderCurrentPage();
             updateStats();
+            
+            // Reset scroll position to top
+            const tableContainer = document.querySelector('.table-container');
+            tableContainer.scrollTop = 0;
         }, 300);
 
         // Function to populate date filter
@@ -663,6 +667,9 @@
             if (currentPage > 1) {
                 currentPage--;
                 renderCurrentPage();
+                // Reset scroll position to top
+                const tableContainer = document.querySelector('.table-container');
+                tableContainer.scrollTop = 0;
             }
         });
         document.getElementById("nextPage").addEventListener("click", () => {
@@ -670,6 +677,9 @@
             if (currentPage < totalPages) {
                 currentPage++;
                 renderCurrentPage();
+                // Reset scroll position to top
+                const tableContainer = document.querySelector('.table-container');
+                tableContainer.scrollTop = 0;
             }
         });
 
