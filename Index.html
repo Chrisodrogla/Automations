@@ -193,7 +193,7 @@
         }
 
         #jobListings table td:nth-child(2) {
-            font-family: 'Courier New', monospace;
+        font-family: 'Courier New', monospace;
             font-size: 1rem;
             font-weight: 800;
             color: var(--primary-color);
@@ -508,7 +508,7 @@
             </div>
         </div>
 
-        <div id="filterSection">
+<div id="filterSection">
             <div class="filter-group">
                 <label for="searchInput">Search:</label>
                 <input type="text" id="searchInput" placeholder="Type to search">
@@ -518,22 +518,23 @@
                 <select id="dateFilter"></select>
             </div>
             <div class="filter-group">
-                <label for="startDate">Date Range:</label>
+                <label for="dateRangeFilter">Date Range:</label>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <input type="date" id="startDate" style="flex: 1;" placeholder="Start Date">
-                    <span style="color: var(--text-secondary);">to</span>
-                    <input type="date" id="endDate" style="flex: 1;" placeholder="End Date">
-                    <button id="applyDateRange" class="download-btn" style="padding: 0.5rem;">
-                        <i class="fas fa-check"></i> Apply
-                    </button>
-                    <button id="clearDateRange" class="download-btn" style="padding: 0.5rem; background-color: var(--text-secondary);">
-                        <i class="fas fa-times"></i> Clear
+                    <select id="startDate" style="width: 200px;">
+                        <option value="">Start Date</option>
+                    </select>
+                    <span>to</span>
+                    <select id="endDate" style="width: 200px;">
+                        <option value="">End Date</option>
+                    </select>
+                    <button id="applyDateRange" class="download-btn" style="padding: 0.5rem 1rem; margin-left: 0.5rem;">
+                        Apply
                     </button>
                 </div>
             </div>
-        </div>
+</div>
 
-        <div id="jobListings">
+<div id="jobListings">
             <div class="table-header">
                 <h2>Automated Job Keywords</h2>
             </div>
@@ -541,17 +542,17 @@
                 <div class="loading-spinner"></div>
             </div>
             <div class="table-container">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Job Title</th>
-                        <th>Keyword Found</th>
-                        <th>Date</th>
-                        <th>Job Link</th>
-                    </tr>
-                    </thead>
-                    <tbody id="jobTableBody"></tbody>
-                </table>
+    <table>
+        <thead>
+        <tr>
+            <th>Job Title</th>
+            <th>Keyword Found</th>
+            <th>Date</th>
+            <th>Job Link</th>
+        </tr>
+        </thead>
+        <tbody id="jobTableBody"></tbody>
+    </table>
             </div>
             <div class="pagination">
                 <button id="prevPage" disabled>Previous</button>
@@ -559,9 +560,9 @@
                 <button id="nextPage" disabled>Next</button>
             </div>
         </div>
-    </div>
+</div>
 
-    <script>
+<script>
         let allJobData = [];
         let currentPage = 1;
         const itemsPerPage = 20;
@@ -586,15 +587,15 @@
         }
 
         // Function to fetch JSON data
-        async function fetchData(url) {
-            try {
+    async function fetchData(url) {
+    try {
                 toggleLoading(true);
-                const response = await fetch(url);
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                console.error("Error fetching data:", error);
-                return [];
+        const response = await fetch(url);
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Error fetching data:", error);
+        return [];
             } finally {
                 toggleLoading(false);
             }
@@ -610,7 +611,7 @@
 
         // Function to render current page
         function renderCurrentPage() {
-            const jobTableBody = document.getElementById("jobTableBody");
+        const jobTableBody = document.getElementById("jobTableBody");
             jobTableBody.innerHTML = '';
 
             const startIndex = (currentPage - 1) * itemsPerPage;
@@ -634,10 +635,35 @@
                     <td>${job.date}</td>
                     <td><a href="${job.url}" target="_blank">View Job</a></td>
                 `;
-                jobTableBody.appendChild(row);
+            jobTableBody.appendChild(row);
             });
 
             updatePagination();
+        }
+
+        // Function to populate date filter
+        function populateDateFilter() {
+            const dateFilter = document.getElementById("dateFilter");
+            const startDate = document.getElementById("startDate");
+            const endDate = document.getElementById("endDate");
+            const uniqueDates = [...new Set(allJobData.map(job => job.date))].sort((a, b) => {
+                return new Date(a) - new Date(b);
+            });
+
+            dateFilter.innerHTML = `
+                <option value="all">All Dates</option>
+                ${uniqueDates.map(date => `<option value="${date}">${date}</option>`).join('')}
+            `;
+
+            startDate.innerHTML = `
+                <option value="">Start Date</option>
+                ${uniqueDates.map(date => `<option value="${date}">${date}</option>`).join('')}
+            `;
+
+            endDate.innerHTML = `
+                <option value="">End Date</option>
+                ${uniqueDates.map(date => `<option value="${date}">${date}</option>`).join('')}
+            `;
         }
 
         // Function to filter jobs
@@ -653,22 +679,19 @@
                     keyword.toLowerCase().includes(searchInput)
                 ) || false;
                 
-                // Date filtering logic
-                const jobDate = new Date(job.date);
-                let dateMatch = true;
+                // Handle single date filter
+                const dateMatch = dateFilter === "all" || job.date === dateFilter;
                 
-                if (dateFilter !== "all") {
-                    dateMatch = job.date === dateFilter;
-                }
-                
-                // Apply date range filter if dates are selected
+                // Handle date range filter
+                let dateRangeMatch = true;
                 if (startDate && endDate) {
+                    const jobDate = new Date(job.date);
                     const start = new Date(startDate);
                     const end = new Date(endDate);
-                    dateMatch = dateMatch && jobDate >= start && jobDate <= end;
+                    dateRangeMatch = jobDate >= start && jobDate <= end;
                 }
-                
-                return (titleMatch || keywordsMatch) && dateMatch;
+
+                return (titleMatch || keywordsMatch) && dateMatch && dateRangeMatch;
             });
 
             currentPage = 1;
@@ -680,22 +703,40 @@
             tableContainer.scrollTop = 0;
         }, 300);
 
-        // Function to populate date filter
-        function populateDateFilter() {
-            const dateFilter = document.getElementById("dateFilter");
-            const uniqueDates = [...new Set(allJobData.map(job => job.date))];
-
-            dateFilter.innerHTML = `
-                <option value="all">All Dates</option>
-                ${uniqueDates.map(date => `<option value="${date}">${date}</option>`).join('')}
-            `;
+        // Function to clear date range
+        function clearDateRange() {
+            document.getElementById("startDate").value = "";
+            document.getElementById("endDate").value = "";
         }
 
         // Event Listeners
         document.getElementById("searchInput").addEventListener("input", filterJobs);
-        document.getElementById("dateFilter").addEventListener("change", filterJobs);
-        document.getElementById("startDate").addEventListener("change", filterJobs);
-        document.getElementById("endDate").addEventListener("change", filterJobs);
+        document.getElementById("dateFilter").addEventListener("change", () => {
+            clearDateRange();
+            filterJobs();
+        });
+        document.getElementById("startDate").addEventListener("change", () => {
+            document.getElementById("dateFilter").value = "all";
+        });
+        document.getElementById("endDate").addEventListener("change", () => {
+            document.getElementById("dateFilter").value = "all";
+        });
+        document.getElementById("applyDateRange").addEventListener("click", () => {
+            const startDate = document.getElementById("startDate").value;
+            const endDate = document.getElementById("endDate").value;
+            
+            if (!startDate || !endDate) {
+                alert("Please select both start and end dates");
+                return;
+            }
+            
+            if (new Date(startDate) > new Date(endDate)) {
+                alert("End date must be after start date");
+                return;
+            }
+            
+            filterJobs();
+        });
         document.getElementById("prevPage").addEventListener("click", () => {
             if (currentPage > 1) {
                 currentPage--;
@@ -715,18 +756,6 @@
                 tableContainer.scrollTop = 0;
             }
         });
-
-        // Add event listeners for date range inputs
-        document.getElementById("applyDateRange").addEventListener("click", filterJobs);
-        document.getElementById("clearDateRange").addEventListener("click", () => {
-            document.getElementById("startDate").value = "";
-            document.getElementById("endDate").value = "";
-            filterJobs();
-        });
-
-        // Remove the automatic filter on date input change
-        document.getElementById("startDate").removeEventListener("change", filterJobs);
-        document.getElementById("endDate").removeEventListener("change", filterJobs);
 
         // Function to update statistics
         function updateStats() {
@@ -787,18 +816,6 @@
             populateDateFilter();
             renderCurrentPage();
             updateStats();
-
-            // Set max date for date range inputs
-            if (allJobData.length > 0) {
-                const latestDate = new Date(Math.max(...allJobData.map(job => new Date(job.date))));
-                const startDateInput = document.getElementById('startDate');
-                const endDateInput = document.getElementById('endDate');
-                
-                // Format date as YYYY-MM-DD for input max attribute
-                const maxDate = latestDate.toISOString().split('T')[0];
-                startDateInput.max = maxDate;
-                endDateInput.max = maxDate;
-            }
         }
 
         initialize();
@@ -833,6 +850,6 @@
 
         // Initialize theme on page load
         initializeTheme();
-    </script>
+</script>
 </body>
 </html>
