@@ -517,6 +517,20 @@
                 <label for="dateFilter">Filter by Date:</label>
                 <select id="dateFilter"></select>
             </div>
+            <div class="filter-group">
+                <label for="startDate">Date Range:</label>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <input type="date" id="startDate" style="flex: 1;" placeholder="Start Date">
+                    <span style="color: var(--text-secondary);">to</span>
+                    <input type="date" id="endDate" style="flex: 1;" placeholder="End Date">
+                    <button id="applyDateRange" class="download-btn" style="padding: 0.5rem;">
+                        <i class="fas fa-check"></i> Apply
+                    </button>
+                    <button id="clearDateRange" class="download-btn" style="padding: 0.5rem; background-color: var(--text-secondary);">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div id="jobListings">
@@ -630,13 +644,30 @@
         const filterJobs = debounce(() => {
             const searchInput = document.getElementById("searchInput").value.toLowerCase();
             const dateFilter = document.getElementById("dateFilter").value;
+            const startDate = document.getElementById("startDate").value;
+            const endDate = document.getElementById("endDate").value;
 
             filteredData = allJobData.filter(job => {
                 const titleMatch = job.title.toLowerCase().includes(searchInput);
                 const keywordsMatch = job.found_keywords?.some(keyword => 
                     keyword.toLowerCase().includes(searchInput)
                 ) || false;
-                const dateMatch = dateFilter === "all" || job.date === dateFilter;
+                
+                // Date filtering logic
+                const jobDate = new Date(job.date);
+                let dateMatch = true;
+                
+                if (dateFilter !== "all") {
+                    dateMatch = job.date === dateFilter;
+                }
+                
+                // Apply date range filter if dates are selected
+                if (startDate && endDate) {
+                    const start = new Date(startDate);
+                    const end = new Date(endDate);
+                    dateMatch = dateMatch && jobDate >= start && jobDate <= end;
+                }
+                
                 return (titleMatch || keywordsMatch) && dateMatch;
             });
 
@@ -663,6 +694,8 @@
         // Event Listeners
         document.getElementById("searchInput").addEventListener("input", filterJobs);
         document.getElementById("dateFilter").addEventListener("change", filterJobs);
+        document.getElementById("startDate").addEventListener("change", filterJobs);
+        document.getElementById("endDate").addEventListener("change", filterJobs);
         document.getElementById("prevPage").addEventListener("click", () => {
             if (currentPage > 1) {
                 currentPage--;
@@ -682,6 +715,18 @@
                 tableContainer.scrollTop = 0;
             }
         });
+
+        // Add event listeners for date range inputs
+        document.getElementById("applyDateRange").addEventListener("click", filterJobs);
+        document.getElementById("clearDateRange").addEventListener("click", () => {
+            document.getElementById("startDate").value = "";
+            document.getElementById("endDate").value = "";
+            filterJobs();
+        });
+
+        // Remove the automatic filter on date input change
+        document.getElementById("startDate").removeEventListener("change", filterJobs);
+        document.getElementById("endDate").removeEventListener("change", filterJobs);
 
         // Function to update statistics
         function updateStats() {
@@ -742,6 +787,18 @@
             populateDateFilter();
             renderCurrentPage();
             updateStats();
+
+            // Set max date for date range inputs
+            if (allJobData.length > 0) {
+                const latestDate = new Date(Math.max(...allJobData.map(job => new Date(job.date))));
+                const startDateInput = document.getElementById('startDate');
+                const endDateInput = document.getElementById('endDate');
+                
+                // Format date as YYYY-MM-DD for input max attribute
+                const maxDate = latestDate.toISOString().split('T')[0];
+                startDateInput.max = maxDate;
+                endDateInput.max = maxDate;
+            }
         }
 
         initialize();
