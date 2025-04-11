@@ -26,4 +26,3 @@ data Analyst
 Analyst
 Airflow
 Zapier
-CRM
