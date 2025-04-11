@@ -70,7 +70,10 @@ def scrape_data(url, partial_words):
 
     description = soup.find('p', {'id': 'job-description'}).text
     date = soup.find_all('p', {'class': 'fs-18'})[3].text
-    title = soup.find('div', {'class': 'col-12 text-center'}).find('h1').text
+    # title = soup.find('div', {'class': 'col-12 text-center'}).find('h1').text
+    title_wrapper = soup.find('div', class_=lambda x: x and 'col-12' in x and 'text-center' in x)
+    title = title_wrapper.find('h1').text.strip() if title_wrapper else ''
+
 
     # Check if any of the partial words are present in the description (case-insensitive)
     found_keywords = [word.lower() for word in partial_words if word.lower() in description.lower()]

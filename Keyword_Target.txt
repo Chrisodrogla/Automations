@@ -24,3 +24,6 @@ Lxml
 Data Engineer
 data Analyst
 Analyst
+Airflow
+Zapier
+CRM
