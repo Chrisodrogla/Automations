@@ -27,3 +27,6 @@ Analyst
 Airflow
 Zapier
 n8n
+fastapi
+fast api
+fast-api
