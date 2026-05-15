@@ -1,5 +1,4 @@
 name: Daily Runner
-
 on:
   workflow_dispatch:
   schedule:
@@ -11,28 +10,41 @@ on:
 jobs:
   run_python_script:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
-
+    
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
-
-    - name: Install Dependencies
+    
+    - name: Install System Dependencies for Chrome
       run: |
-        pip install pandas selenium google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client pyodbc beautifulsoup4
-
+        sudo apt-get update
+        sudo apt-get install -y chromium chromium-browser chromium-codecs-ffmpeg
+    
+    - name: Install Python Dependencies
+      run: |
+        pip install pandas selenium google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client pyodbc beautifulsoup4 requests webdriver-manager
+    
     - name: Run Python Script
       run: |
         python web_scraper.py
-
+      timeout-minutes: 30
+      env:
+        PYTHONUNBUFFERED: 1
+    
+    - name: Check if data changed
+      id: changes
+      run: |
+        git diff --quiet data_gathered.json || echo "CHANGES=true" >> $GITHUB_OUTPUT
+    
     - name: Commit and push changes
+      if: steps.changes.outputs.CHANGES == 'true'
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
         git add data_gathered.json
-        git commit -m 'Update generate'
+        git commit -m 'Update job data - $(date +'%Y-%m-%d %H:%M:%S')'
         git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Chrisodrogla/Automations.git
