@@ -66,60 +66,34 @@ for _ in range(num_pages_to_visit):
 # Function to scrape information from a given URL
 def scrape_data(url, partial_words):
     response = requests.get(url)
+
+    # Print first 100 characters of the response HTML
+    print(response.text[:100])
+
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    # OPTION 1: Print entire soup (all HTML)
-    # print("="*80)
-    # print(f"SOUP FOR: {url}")
-    # print("="*80)
-    # print(soup.prettify())  # Pretty print with indentation
-    # print("="*80)
-    
-    # OPTION 2: Print only specific part of soup
-    # print(soup.prettify())
-    
-    # OPTION 3: Print as string (compact)
-    # print(str(soup))
-    
-    # OPTION 4: Save soup to file for viewing
-    # with open(f'soup_output_{url.split("/")[-1]}.html', 'w', encoding='utf-8') as f:
-    #     f.write(soup.prettify())
-    
-    description = soup.find('p', {'id': 'job-description'})
-    date_elems = soup.find_all('p', {'class': 'fs-18'})
-    title_wrapper = soup.find('div', class_=lambda x: x and 'col-12' in x and 'text-center' in x)
-    
-    # OPTION 5: Print what you're looking for (debugging)
-    print(f"\n{'='*80}")
-    print(f"URL: {url}")
-    print(f"{'='*80}")
-    print(f"Description found: {description is not None}")
-    if description:
-        print(f"Description text: {description.text[:100]}...")
-    print(f"Date elements found: {len(date_elems)}")
-    if len(date_elems) > 3:
-        print(f"Date: {date_elems[3].text}")
-    print(f"Title wrapper found: {title_wrapper is not None}")
-    if title_wrapper:
-        h1 = title_wrapper.find('h1')
-        print(f"H1 found: {h1 is not None}")
-        if h1:
-            print(f"Title: {h1.text.strip()}")
-    print(f"{'='*80}\n")
-    
-    # Safe extraction
-    description_text = description.text if description else ''
-    date_text = date_elems[3].text if len(date_elems) > 3 else ''
-    title = title_wrapper.find('h1').text.strip() if title_wrapper and title_wrapper.find('h1') else ''
+    description = soup.find('p', {'id': 'job-description'}).text
+    date = soup.find_all('p', {'class': 'fs-18'})[3].text
 
-    # Check if any of the partial words are present in the description (case-insensitive)
-    found_keywords = [word.lower() for word in partial_words if word.lower() in description_text.lower()]
+    title_wrapper = soup.find(
+        'div',
+        class_=lambda x: x and 'col-12' in x and 'text-center' in x
+    )
+
+    title = title_wrapper.find('h1').text.strip() if title_wrapper else ''
+
+    # Check if any of the partial words are present
+    found_keywords = [
+        word.lower()
+        for word in partial_words
+        if word.lower() in description.lower()
+    ]
 
     return {
         'url': url,
         'title': title,
-        'date': date_text,
-        'description': description_text,
+        'date': date,
+        'description': description,
         'found_keywords': found_keywords
     }
 
@@ -142,13 +116,12 @@ keywords_file_path = 'Keyword_Target.txt'
 with open(keywords_file_path, 'r') as keywords_file:
     partial_words = [line.strip() for line in keywords_file]
 
-for idx, url in enumerate(link_visit[:5]):  # Only process first 5 URLs for debugging
+for url in link_visit:
     # Skip if URL already exists
     if url in existing_urls:
         continue
 
     try:
-        print(f"Processing [{idx+1}]: {url}")
         data = scrape_data(url, partial_words)
 
         # Append new data to existing data only if keywords are found
