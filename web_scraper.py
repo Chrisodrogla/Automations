@@ -6,6 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 import logging
+import re
 
 # Set up logging
 logging.basicConfig(
@@ -23,6 +24,8 @@ website = 'https://www.onlinejobs.ph/jobseekers/jobsearch'
 # Set Chrome options for headless mode
 chrome_options = Options()
 chrome_options.add_argument('--headless')  # This line makes Chrome run in headless mode
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
 
 # Initialize the webdriver with the specified options
 driver = webdriver.Chrome(options=chrome_options)
@@ -48,6 +51,7 @@ while True:
         pagination = driver.find_element("xpath", '//a[@rel="next"]')
         logger.info("Next page found, clicking...")
         pagination.click()
+        time.sleep(2)
 
     except NoSuchElementException:
         # If the next page link is not found, exit the loop
@@ -78,51 +82,91 @@ for _ in range(num_pages_to_visit):
 
 # Function to scrape information from a given URL
 def scrape_data(url, partial_words):
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
+    try:
+        response = requests.get(url, timeout=10)
+        soup = BeautifulSoup(response.text, 'html.parser')
 
-    # Check and extract description
-    description_elem = soup.find('p', {'id': 'job-description'})
-    if description_elem:
-        description = description_elem.text
-        logger.debug(f"[{url}] ✓ Description found")
-    else:
+        # FIXED: Try multiple methods to find description
         description = ''
-        logger.warning(f"[{url}] ✗ Description element not found (id='job-description')")
-    
-    # Check and extract date
-    date_elems = soup.find_all('p', {'class': 'fs-18'})
-    if len(date_elems) > 3:
-        date = date_elems[3].text
-        logger.debug(f"[{url}] ✓ Date found at index [3]")
-    else:
-        date = ''
-        logger.warning(f"[{url}] ✗ Date element not found - Expected at least 4 'fs-18' elements, found {len(date_elems)}")
-    
-    # Check and extract title
-    title_wrapper = soup.find('div', class_=lambda x: x and 'col-12' in x and 'text-center' in x)
-    if title_wrapper:
-        h1_elem = title_wrapper.find('h1')
-        if h1_elem:
-            title = h1_elem.text.strip()
-            logger.debug(f"[{url}] ✓ Title found")
+        description_elem = soup.find('p', {'class': 'job-description'})
+        if not description_elem:
+            description_elem = soup.find('p', {'id': 'job-description'})
+        
+        if description_elem:
+            description = description_elem.text
+            logger.debug(f"✓ Description found")
         else:
-            title = ''
-            logger.warning(f"[{url}] ✗ H1 element not found inside title wrapper")
-    else:
+            logger.warning(f"✗ Description not found")
+        
+        # FIXED: Try multiple methods to find date
+        date = ''
+        date_elems = soup.find_all('p', {'class': 'fs-18'})
+        
+        if len(date_elems) > 3:
+            date = date_elems[3].text.strip()
+            logger.debug(f"✓ Date found at index [3]")
+        elif len(date_elems) > 0:
+            # Use the last one
+            date = date_elems[-1].text.strip()
+            logger.warning(f"✗ Date: Found {len(date_elems)} fs-18 elements, using last one")
+        else:
+            # Try regex search for date pattern
+            all_text = soup.get_text()
+            date_pattern = r'(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}'
+            date_match = re.search(date_pattern, all_text)
+            if date_match:
+                date = date_match.group(0)
+                logger.warning(f"✗ Found date with regex: {date}")
+            else:
+                logger.warning(f"✗ Date not found (no fs-18 elements)")
+        
+        # FIXED: Try multiple methods to find title
         title = ''
-        logger.warning(f"[{url}] ✗ Title wrapper not found (div with 'col-12' and 'text-center')")
+        
+        # Method 1: Look for h1 with job__title class
+        h1_job = soup.find('h1', {'class': 'job__title'})
+        if h1_job:
+            title = h1_job.text.strip()
+            logger.debug(f"✓ Title found (job__title class)")
+        else:
+            # Method 2: Look for h1 in div with col-12 and text-center
+            title_wrapper = soup.find('div', class_=lambda x: x and 'col-12' in x and 'text-center' in x)
+            if title_wrapper:
+                h1_elem = title_wrapper.find('h1')
+                if h1_elem:
+                    title = h1_elem.text.strip()
+                    logger.debug(f"✓ Title found (in col-12 wrapper)")
+                else:
+                    logger.warning(f"✗ No H1 found inside title wrapper")
+            else:
+                # Method 3: Look for any h1 tag
+                h1_any = soup.find('h1')
+                if h1_any:
+                    title = h1_any.text.strip()
+                    logger.warning(f"✗ Title found (using any h1)")
+                else:
+                    logger.warning(f"✗ Title not found")
 
-    # Check if any of the partial words are present in the description (case-insensitive)
-    found_keywords = [word.lower() for word in partial_words if word.lower() in description.lower()]
+        # Check if any of the partial words are present in the description (case-insensitive)
+        found_keywords = [word.lower() for word in partial_words if word.lower() in description.lower()]
 
-    return {
-        'url': url,
-        'title': title,
-        'date': date,
-        'description': description,
-        'found_keywords': found_keywords
-    }
+        return {
+            'url': url,
+            'title': title,
+            'date': date,
+            'description': description,
+            'found_keywords': found_keywords
+        }
+    
+    except Exception as e:
+        logger.error(f"Error in scrape_data: {e}")
+        return {
+            'url': url,
+            'title': '',
+            'date': '',
+            'description': '',
+            'found_keywords': []
+        }
 
 # List to store the scraped data dictionaries
 data_list = []
@@ -143,7 +187,7 @@ existing_urls = set(entry['url'] for entry in existing_data)
 keywords_file_path = 'Keyword_Target.txt'
 try:
     with open(keywords_file_path, 'r') as keywords_file:
-        partial_words = [line.strip() for line in keywords_file]
+        partial_words = [line.strip() for line in keywords_file if line.strip()]
     logger.info(f"Loaded {len(partial_words)} keywords: {partial_words}")
 except FileNotFoundError:
     logger.error("Keyword_Target.txt not found!")
@@ -154,7 +198,7 @@ logger.info(f"Starting to scrape {len(link_visit)} URLs...")
 for idx, url in enumerate(link_visit, 1):
     # Skip if URL already exists
     if url in existing_urls:
-        logger.debug(f"[{idx}/{len(link_visit)}] Skipping URL (already scraped): {url}")
+        logger.debug(f"[{idx}/{len(link_visit)}] Skipping URL (already scraped)")
         continue
 
     logger.info(f"[{idx}/{len(link_visit)}] Scraping: {url}")
@@ -167,11 +211,11 @@ for idx, url in enumerate(link_visit, 1):
             data_list.append(data)
             logger.info(f"[{idx}/{len(link_visit)}] ✓ Keywords found: {data['found_keywords']}")
         else:
-            logger.info(f"[{idx}/{len(link_visit)}] ✗ No keywords found")
+            logger.debug(f"[{idx}/{len(link_visit)}] ✗ No keywords found")
 
         time.sleep(2)  # Add a delay to avoid being blocked
     except Exception as e:
-        logger.error(f"[{idx}/{len(link_visit)}] Error scraping data from {url}: {e}")
+        logger.error(f"[{idx}/{len(link_visit)}] Error processing {url}: {e}")
 
 
 logger.info(f"Total new entries to add: {len(data_list)}")
