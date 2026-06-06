@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 
 # Define the date threshold (January 2025)
-date_threshold = datetime(2025, 1, 1)
+date_threshold = datetime(2026, 5, 1)
 
 # Function to clean and filter data based on the date
 def clean_data(data, threshold_date):
