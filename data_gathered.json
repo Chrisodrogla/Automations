@@ -1550,5 +1550,25 @@
     "found_keywords": [
       "requests"
     ]
+  },
+  {
+    "url": "https://www.onlinejobs.ph/jobseekers/job/Back-End-Developer-Rust-Python-TimescaleDB-1547509",
+    "title": "Back End Developer (Rust / Python / TimescaleDB)",
+    "date": "Jun 7, 2026",
+    "description": "COMPANY DESCRIPTION\n\nWe are a fast-growing company building advanced analytics platforms and dashboards for traders, builders, analysts, quants and researchers. Our mission is to make complex data accessible through clean, intuitive, and high-performance interfaces. We combine technical expertise with beautiful design to empower trader decision-making.\n\nKEY RESPONSIBILITIES\n\nArchitect, build, and maintain high-performance backend services in Rust and Python\n\nOptimize TimescaleDB hypertables and Continuous Aggregates for speed, scale, and reliability\n\nDesign scalable data collection pipelines to capture real-time and historical trading data\n\nTune database performance:\n\nindices, compression, partitioning, caching, query tuning\n\nImplement fault-tolerant data ingestion systems and monitoring pipelines\n\nDesign and maintain high-performance TimescaleDB schemas optimized for time-series workloads.\n\nImplement materialized views, continuous aggregates, and UML-driven database design.\n\nConduct normalization, indexing, and compression to optimize storage and performance.\n\nProfile and optimize slow queries, background jobs, and large joins.\n\nEnsure database integrity, consistency, and security across environments.\n\nCollaborate with developers to integrate database logic into backend services.\n\nDevelop and maintain database documentation, UML diagrams, and performance monitoring dashboards.\n\n\n\nNICE TO HAVE:\n\nExperience with FastAPI (Python)\n\nRedis / RabbitMQ / WebSockets knowledge\n\nExperience with cloud infrastructure (AWS)\n\nExperience working in blockchain and cryptocurrency industries, or knowledge of Web3, Trading and Hyperliquid is a plus.\n\nExperience with Telegram  ---------- \n\n\n\nWHO YOU ARE\nYou take pride in building things fast and correct.\n\nYou think in latency, throughput, and memory efficiency.\n\nYou care about correctness, determinism, and data integrity.\n\nYou understand how markets breathe, move, and occasionally panic.\n\n\n\nCOMPENSATION AND PERKS\n\nBase Salary: Php 60,000 / month.\n\nStock Options: We are a start-up and you will own a part of the company. We expect you to work hard to make Block Liquidity a global success. \n\nImpact: Massive ownership over the technical roadmap of a fast-growing platform.\n\nEnvironment: Work alongside a team of quants and designers who value technical excellence.",
+    "found_keywords": [
+      "python",
+      "analyst",
+      "fastapi"
+    ]
+  },
+  {
+    "url": "https://www.onlinejobs.ph/jobseekers/job/Web-Developer-PythonJSPHP-1240126",
+    "title": "Web Developer Python/JS/PHP",
+    "date": "Jun 7, 2026",
+    "description": "Web Developer PHP/JS; python skills preferred, but not required. 7 DAYS/WEEK = 56 HOURS 23,041PHP/month\n\nInclude in your application:\n1. Typing Skill in WPM (words per minute) - take test on 10fastfingers website; just paste your score, no links please\n2. The word \"teddy\" so we understand you have read the job ad/work hours/salary and your message is not spam\n3. Are you open to learning new things and being trained in new skills?\n4. Can you work night time hours in Philippine time zone?",
+    "found_keywords": [
+      "python"
+    ]
   }
 ]
